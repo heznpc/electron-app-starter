@@ -10,8 +10,32 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  build:
+  version-guard:
     needs: ci
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building v$VERSION"
+
+      - name: Check tag does not exist
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "::error::Tag v${{ steps.version.outputs.version }} already exists. Bump the version first."
+            exit 1
+          fi
+
+  build:
+    needs: version-guard
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
@@ -23,22 +47,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-
-      - name: Extract version
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Building v$VERSION"
-
-      - name: Version guard
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
-            echo "::error::Tag v${{ steps.version.outputs.version }} already exists. Bump the version first."
-            exit 1
-          fi
 
       - name: Install dependencies
         run: npm ci
@@ -78,19 +86,15 @@ jobs:
             dist/*.exe
             dist/*.AppImage
             dist/*.deb
+            dist/*.yml
+            dist/*.yaml
           if-no-files-found: ignore
 
   release:
-    needs: build
+    needs: [version-guard, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Extract version
-        id: version
-        run: |
-          VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -104,10 +108,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
+          tag_name: v${{ needs.version-guard.outputs.version }}
+          name: v${{ needs.version-guard.outputs.version }}
           body: |
-            ## Release v${{ steps.version.outputs.version }}
+            ## Release v${{ needs.version-guard.outputs.version }}
 
             ### Downloads
             - **macOS:** `.dmg` (installer) + `.zip` (auto-update)
@@ -117,5 +121,5 @@ jobs:
             ### Auto-Update
             Existing users with auto-update enabled will receive this update automatically.
           files: |
-            artifacts/*
+            artifacts/**/*
           generate_release_notes: true

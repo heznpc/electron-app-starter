@@ -160,7 +160,7 @@ npm test
 | CI/CD | matrix 빌드 + 자동 업데이트 포함 | 미포함 |
 | 코드 서명 | GitHub Secrets 설정 가이드 포함 | 수동 설정 |
 | 자동 업데이트 | GitHub Releases와 바로 작동 | 수동 설정 필요 |
-| 의존성 | runtime 2개, dev 6개 | 50개+ |
+| 의존성 | runtime 1개, dev 6개 | 50개+ |
 | AI/바이브코딩 | LLM이 깔끔한 vanilla JS 생성 | LLM이 플러그인 시스템을 이해해야 함 |
 
 **이 템플릿을 선택하세요:**

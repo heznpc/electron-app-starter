@@ -1,12 +1,11 @@
 name: Template Setup
 
 on:
-  push:
-    branches: [main]
+  create:
 
 jobs:
   setup:
-    if: github.event.created || github.run_number == 1
+    if: github.event.ref_type == 'branch' && github.event.ref == 'main'
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -31,7 +30,7 @@ jobs:
           gh issue create \
             --title "Setup: Configure your Electron app" \
             --body "$(cat <<'EOF'
-          Welcome! You've created a new project from **electron-app-starter**. Here's your setup checklist:
+          Welcome! You've created a new project from **electron-app-starter**.
 
           ## Required
           - [ ] Update `package.json` — change `name`, `description`, `build.appId`, `build.productName`
@@ -46,7 +45,5 @@ jobs:
           - [ ] Write tests in `tests/` and run with `npm test`
           - [ ] Review [Auto-Update Guide](docs/AUTO_UPDATE.md) for release workflow
           - [ ] Delete this issue when done
-
-          Happy building!
           EOF
           )"

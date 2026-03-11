@@ -160,7 +160,7 @@ npm test
 | CI/CD | Full pipeline with matrix builds + auto-update | Not included |
 | Code signing | GitHub Secrets setup guide included | Manual setup |
 | Auto-update | Works out of the box with GitHub Releases | Manual configuration |
-| Dependencies | 2 runtime, 6 dev | 50+ |
+| Dependencies | 1 runtime, 6 dev | 50+ |
 | AI/vibe-coding | LLMs generate clean vanilla JS | LLMs must understand plugin system |
 
 **Choose this template if:**

@@ -8,6 +8,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   onUpdateDownloaded: (callback) => {
-    ipcRenderer.on('update-downloaded', (_event, version) => callback(version));
+    ipcRenderer.once('update-downloaded', (_event, version) => callback(version));
   },
 });
