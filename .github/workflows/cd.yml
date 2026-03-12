@@ -3,6 +3,10 @@ name: Build & Release
 on:
   workflow_dispatch:
 
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
@@ -89,6 +93,7 @@ jobs:
             dist/*.yml
             dist/*.yaml
           if-no-files-found: ignore
+          retention-days: 30
 
   release:
     needs: [version-guard, build]
